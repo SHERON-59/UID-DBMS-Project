@@ -1639,7 +1639,6 @@ app.use('*', (req, res) => {
 
 console.log('Enhanced API endpoints loaded successfully');
 
-// Example usage functions
 class CBSEOperations {
     static async demonstrateOperations() {
         console.log('=== CBSE Database Operations Demo ===\n');
@@ -1720,8 +1719,6 @@ app.listen(PORT, async () => {
     await testConnection();
     await initializeDatabase();
 
-    // Uncomment to run demonstration
-    // await CBSEOperations.demonstrateOperations();
 });
 
 // Export for use in other modules
@@ -1734,36 +1731,5 @@ module.exports = {
     authorizeRole
 };
 
-// Example of how to use the system:
-/*
-// Adding a new examiner
-const newExaminerData = {
-    examinerName: 'Dr. Neha Agarwal',
-    schoolId: 2,
-    qualification: 'M.Sc Chemistry, Ph.D',
-    subjectId: 2,
-    contactNumber: '9876543220',
-    email: 'neha.agarwal@email.com',
-    experienceYears: 14
-};
 
-// Evaluating an answer sheet
-const answerSheetData = {
-    answerBookId: 'AB2024004001C',
-    studentRollNumber: '2024001001',
-    subjectId: 2,
-    examinerId: 7, // New examiner's ID
-    marksAssigned: 89,
-    evaluationDate: '2024-04-20',
-    remarks: 'Excellent understanding of chemical concepts'
-};
 
-// Scheduling invigilation
-const invigilationData = {
-    examinerId: 7,
-    schoolId: 3,
-    examDate: '2024-03-25',
-    examSession: 'Morning',
-    subjectId: 2
-};
-*/
