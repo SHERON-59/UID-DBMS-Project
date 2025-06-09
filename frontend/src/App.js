@@ -920,14 +920,7 @@ const CBSEManagementSystem = () => {
               </button>
             </div>
             <div className="space-y-4">
-              {formData.assignment_id ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Examiner</label>
-                  <p className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
-                    {data.examiners.find(examiner => examiner.examiner_id === formData.examinerId)?.examiner_name || 'N/A'}
-                  </p>
-                </div>
-              ) : (
+              {!formData.assignment_id && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Examiner</label>
                   <select
