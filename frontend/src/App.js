@@ -407,13 +407,13 @@ const CBSEManagementSystem = () => {
   const API_BASE = 'http://localhost:3000/api';
 
   const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value || (name === 'examDate' ? new Date().toISOString().split('T')[0] : value),
-  }));
-  setError(''); 
-};
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value || (name === 'examDate' ? new Date().toISOString().split('T')[0] : value),
+    }));
+    setError('');
+  };
 
   // Fetch data functions with authentication
   const fetchData = async (endpoint) => {
@@ -494,68 +494,68 @@ const CBSEManagementSystem = () => {
   const [error, setError] = useState('');
   const handleSubmit = async (endpoint, data, method = 'POST') => {
     if (endpoint.includes('invigilation')) {
-        if (!data.exam_date || !/^\d{4}-\d{2}-\d{2}$/.test(data.exam_date)) {
-            setError('Please select a valid exam date (YYYY-MM-DD).');
-            return false;
-        }
+      if (!data.exam_date || !/^\d{4}-\d{2}-\d{2}$/.test(data.exam_date)) {
+        setError('Please select a valid exam date (YYYY-MM-DD).');
+        return false;
+      }
     }
     try {
-        const payload = {
-    examinerId: formData.examinerId ? parseInt(formData.examinerId) : null,
-    schoolId: formData.schoolId ? parseInt(formData.schoolId) : null,
-    examDate: formData.examDate || new Date().toISOString().split('T')[0],
-    examSession: formData.examSession || '',
-    subjectId: formData.subjectId ? parseInt(formData.subjectId) : null,
-    assignmentId: formData.assignment_id ? parseInt(formData.assignment_id) : null,
-};
-        console.log('Submitting to endpoint:', endpoint, 'Payload:', payload);
-        const response = await fetch(`${API_BASE}/${endpoint}`, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                ...await getAuthHeaders()
-            },
-            body: JSON.stringify(payload),
-        });
-        const responseData = await response.json();
-        if (!response.ok) {
-            console.error('Submission error:', responseData);
-            setError(responseData.error || `Failed to ${method === 'PUT' ? 'update' : 'submit'} data`);
-            return false;
-        }
-        await loadData();
-        setShowModal(false);
-        setFormData({
-            assignment_id: null,
-            examinerId: null,
-            schoolId: null,
-            examDate: new Date().toISOString().split('T')[0],
-            examSession: '',
-            subjectId: null,
-            schoolName: '',
-            location: '',
-            contactNumber: '',
-            email: '',
-            principalName: '',
-            studentRollNumber: '',
-            studentName: '',
-            classStandard: '10',
-            answerBookId: '',
-            marksAssigned: '',
-            evaluationDate: '',
-            remarks: '',
-            examinerName: '',
-            qualification: '',
-            experienceYears: '',
-        });
-        setError('');
-        return true;
-    } catch (error) {
-        console.error('Error submitting data:', error);
-        setError(error.message || 'An unexpected error occurred while submitting the data');
+      const payload = {
+        examinerId: formData.examinerId ? parseInt(formData.examinerId) : null,
+        schoolId: formData.schoolId ? parseInt(formData.schoolId) : null,
+        examDate: formData.examDate || new Date().toISOString().split('T')[0],
+        examSession: formData.examSession || '',
+        subjectId: formData.subjectId ? parseInt(formData.subjectId) : null,
+        assignmentId: formData.assignment_id ? parseInt(formData.assignment_id) : null,
+      };
+      console.log('Submitting to endpoint:', endpoint, 'Payload:', payload);
+      const response = await fetch(`${API_BASE}/${endpoint}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...await getAuthHeaders()
+        },
+        body: JSON.stringify(payload),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        console.error('Submission error:', responseData);
+        setError(responseData.error || `Failed to ${method === 'PUT' ? 'update' : 'submit'} data`);
         return false;
+      }
+      await loadData();
+      setShowModal(false);
+      setFormData({
+        assignment_id: null,
+        examinerId: null,
+        schoolId: null,
+        examDate: new Date().toISOString().split('T')[0],
+        examSession: '',
+        subjectId: null,
+        schoolName: '',
+        location: '',
+        contactNumber: '',
+        email: '',
+        principalName: '',
+        studentRollNumber: '',
+        studentName: '',
+        classStandard: '10',
+        answerBookId: '',
+        marksAssigned: '',
+        evaluationDate: '',
+        remarks: '',
+        examinerName: '',
+        qualification: '',
+        experienceYears: '',
+      });
+      setError('');
+      return true;
+    } catch (error) {
+      console.error('Error submitting data:', error);
+      setError(error.message || 'An unexpected error occurred while submitting the data');
+      return false;
     }
-};
+  };
 
   const openModal = (type, data = {}) => {
     setModalType(type);
@@ -832,12 +832,12 @@ const CBSEManagementSystem = () => {
                   onChange={(e) => {
                     console.log('Selected examinerId:', e.target.value);
                     setFormData({ ...formData, examinerId: e.target.value });
-                   }}
+                  }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
                   <option value="">Select Examiner</option>
-                  {examiners.map(examiner => (
+                  {data.examiners.map((examiner) => (
                     <option key={examiner.examiner_id} value={examiner.examiner_id}>
                       {examiner.examiner_name}
                     </option>
@@ -905,134 +905,143 @@ const CBSEManagementSystem = () => {
     }
 
     if (modalType === 'invigilation') {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">
-            {formData.assignment_id ? 'Edit Invigilation Assignment' : 'Add Invigilation Assignment'}
-          </h2>
-          <button
-            onClick={() => setShowModal(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ×
-          </button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Examiner</label>
-            <select
-              name="examinerId"
-              value={formData.examinerId || ''}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Examiner</option>
-              {data.examiners.map((examiner) => (
-                <option key={examiner.examiner_id} value={examiner.examiner_id}>
-                  {examiner.examiner_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
-            <select
-              name="schoolId"
-              value={formData.schoolId || ''}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select School</option>
-              {data.schools.map((school) => (
-                <option key={school.school_id} value={school.school_id}>
-                  {school.school_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
-            <input
-              type="date"
-              name="examDate"
-              value={formData.examDate}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Exam Session</label>
-            <select
-              name="examSession"
-              value={formData.examSession}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Session</option>
-              <option value="Morning">Morning</option>
-              <option value="Afternoon">Afternoon</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-            <select
-              name="subjectId"
-              value={formData.subjectId || ''}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Subject</option>
-              {data.subjects.map((subject) => (
-                <option key={subject.subject_id} value={subject.subject_id}>
-                  {subject.subject_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-              {error}
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">
+                {formData.assignment_id ? 'Edit Invigilation Assignment' : 'Add Invigilation Assignment'}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ×
+              </button>
             </div>
-          )}
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              onClick={() => setShowModal(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                const endpoint = formData.assignment_id
-                  ? `invigilation/${formData.assignment_id}`
-                  : 'invigilation';
-                const method = formData.assignment_id ? 'PUT' : 'POST';
-                handleSubmit(endpoint, {
-                  assignment_id: formData.assignment_id,
-                  examiner_id: formData.examinerId,
-                  school_id: formData.schoolId,
-                  exam_date: formData.examDate,
-                  exam_session: formData.examSession,
-                  subject_id: formData.subjectId,
-                }, method);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {formData.assignment_id ? 'Update' : 'Add'}
-            </button>
+            <div className="space-y-4">
+              {formData.assignment_id ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Examiner</label>
+                  <p className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+                    {data.examiners.find(examiner => examiner.examiner_id === formData.examinerId)?.examiner_name || 'N/A'}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Examiner</label>
+                  <select
+                    name="examinerId"
+                    value={formData.examinerId || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select Examiner</option>
+                    {data.examiners.map((examiner) => (
+                      <option key={examiner.examiner_id} value={examiner.examiner_id}>
+                        {examiner.examiner_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
+                <select
+                  name="schoolId"
+                  value={formData.schoolId || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select School</option>
+                  {data.schools.map((school) => (
+                    <option key={school.school_id} value={school.school_id}>
+                      {school.school_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
+                <input
+                  type="date"
+                  name="examDate"
+                  value={formData.examDate}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Session</label>
+                <select
+                  name="examSession"
+                  value={formData.examSession}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Session</option>
+                  <option value="Morning">Morning</option>
+                  <option value="Afternoon">Afternoon</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <select
+                  name="subjectId"
+                  value={formData.subjectId || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Subject</option>
+                  {data.subjects.map((subject) => (
+                    <option key={subject.subject_id} value={subject.subject_id}>
+                      {subject.subject_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {error && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const endpoint = formData.assignment_id
+                      ? `invigilation/${formData.assignment_id}`
+                      : 'invigilation';
+                    const method = formData.assignment_id ? 'PUT' : 'POST';
+                    handleSubmit(endpoint, {
+                      assignment_id: formData.assignment_id,
+                      examiner_id: formData.examinerId,
+                      school_id: formData.schoolId,
+                      exam_date: formData.examDate,
+                      exam_session: formData.examSession,
+                      subject_id: formData.subjectId,
+                    }, method);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {formData.assignment_id ? 'Update' : 'Add'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      );
+    }
 
     if (modalType === 'examiner') {
       return (
