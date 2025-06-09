@@ -1,5 +1,4 @@
 // CBSE Board Exams Database Application
-// Requires: pg (node-postgres), express, cors, dotenv, bcryptjs, jsonwebtoken, express-session
 
 const { Pool } = require('pg');
 const express = require('express');
@@ -30,10 +29,18 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true in production with HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: false, 
+        maxAge: 24 * 60 * 60 * 1000 
     }
 }));
+
+// Helper function to validate date format (YYYY-MM-DD)
+const isValidDate = (dateString) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date) && date.toISOString().startsWith(dateString);
+};
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -312,7 +319,7 @@ static async createInvigilationAssignmentsTable() {
                 throw error;
             }
             attempt++;
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
     }
 }
@@ -674,8 +681,8 @@ const initializeDatabase = async () => {
                 email: 'admin@cbse.edu.in',
                 password: 'admin123',
                 role: 'admin',
-                examinerId: null, // Admin doesn't need an examiner ID
-                schoolId: null    // Admin doesn't need a school ID
+                examinerId: null, 
+                schoolId: null    
             });
             console.log('Default admin user created: admin/admin123');
         }
@@ -992,7 +999,7 @@ app.post('/api/subjects', authenticateToken, authorizeRole(['admin', 'coordinato
             data: result.rows[0]
         });
     } catch (err) {
-        if (err.code === '23505') { // Unique constraint violation
+        if (err.code === '23505') { 
             res.status(400).json({ 
                 success: false, 
                 error: 'Subject code already exists' 
@@ -1152,7 +1159,7 @@ app.get('/api/students', authenticateToken, async (req, res) => {
     }
 });
 
-// 5. Enhanced Students routes
+// Enhanced Students routes
 app.post('/api/students', authenticateToken, authorizeRole(['admin', 'coordinator']), validateRequest(['studentRollNumber', 'studentName', 'schoolId']), async (req, res) => {
     try {
         const studentData = {
@@ -1245,7 +1252,7 @@ app.get('/api/answer-sheets', authenticateToken, async (req, res) => {
     }
 });
 
-// 6. Enhanced Answer Sheets routes
+// Enhanced Answer Sheets routes
 app.post('/api/answer-sheets', authenticateToken, authorizeRole(['admin', 'coordinator']), validateRequest(['answerBookId', 'studentRollNumber', 'subjectId', 'examinerId']), async (req, res) => {
     try {
         const answerSheetData = {
@@ -1325,7 +1332,7 @@ app.get('/api/invigilation', authenticateToken, async (req, res) => {
     }
 });
 
-// 7. Enhanced Invigilation routes
+// Enhanced Invigilation routes
 app.post('/api/invigilation', authenticateToken, authorizeRole(['admin', 'coordinator']), validateRequest(['examinerId', 'schoolId', 'examDate', 'examSession']), async (req, res) => {
     try {
         const assignmentData = {
@@ -1349,11 +1356,32 @@ app.post('/api/invigilation', authenticateToken, authorizeRole(['admin', 'coordi
 });
 
 // Update invigilation assignment
-app.put('/api/invigilation/:id', authenticateToken, authorizeRole(['admin', 'coordinator']), async (req, res) => {
+// Update invigilation assignment
+app.put('/api/invigilation/:id', authenticateToken, authorizeRole(['admin', 'coordinator']), validateRequest(['examinerId', 'schoolId', 'examDate', 'examSession', 'subjectId']), async (req, res) => {
     try {
         const { id } = req.params;
         const { examinerId, schoolId, examDate, examSession, subjectId } = req.body;
-        
+
+        // Additional validation for examDate format
+        if (!isValidDate(examDate)) {
+            return res.status(400).json({ success: false, error: 'Invalid exam date format. Use YYYY-MM-DD.' });
+        }
+
+        const examinerCheck = await pool.query('SELECT 1 FROM examiners WHERE examiner_id = $1', [examinerId]);
+        if (examinerCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid examiner ID' });
+        }
+
+        const schoolCheck = await pool.query('SELECT 1 FROM schools WHERE school_id = $1', [schoolId]);
+        if (schoolCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid school ID' });
+        }
+
+        const subjectCheck = await pool.query('SELECT 1 FROM subjects WHERE subject_id = $1', [subjectId]);
+        if (subjectCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid subject ID' });
+        }
+
         const result = await pool.query(
             `UPDATE invigilation_assignments SET 
                 examiner_id = $1, school_id = $2, exam_date = $3, 
@@ -1361,17 +1389,18 @@ app.put('/api/invigilation/:id', authenticateToken, authorizeRole(['admin', 'coo
              WHERE assignment_id = $6 RETURNING *`,
             [examinerId, schoolId, examDate, examSession, subjectId, id]
         );
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'Assignment not found' });
         }
-        
+
         res.json({
             success: true,
             message: 'Invigilation assignment updated successfully',
             data: result.rows[0]
         });
     } catch (err) {
+        console.error('Error updating invigilation assignment:', err.message, err.stack);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1425,7 +1454,7 @@ app.get('/api/statistics/schools', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// 8. Search and filter endpoints
+// Search and filter endpoints
 app.get('/api/search/examiners', async (req, res) => {
     try {
         const { school, subject, experience } = req.query;
@@ -1506,7 +1535,7 @@ app.get('/api/search/students', async (req, res) => {
     }
 });
 
-// 9. Bulk operations
+// Bulk operations
 app.post('/api/bulk/students', async (req, res) => {
     try {
         const { students } = req.body; // Array of student objects
@@ -1535,7 +1564,7 @@ app.post('/api/bulk/students', async (req, res) => {
     }
 });
 
-// 10. Data export endpoints
+// Data export endpoints
 app.get('/api/export/schools', async (req, res) => {
     try {
         const schools = await CBSEDatabase.getAllSchools();
@@ -1558,7 +1587,7 @@ app.get('/api/export/examiners', async (req, res) => {
     }
 });
 
-// 11. Get single record endpoints
+// Get single record endpoints
 app.get('/api/schools/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -1618,7 +1647,7 @@ app.get('/api/students/:rollNumber', async (req, res) => {
     }
 });
 
-// 12. Additional middleware for CORS and error handling
+// Additional middleware for CORS and error handling
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
     res.status(500).json({
@@ -1720,8 +1749,6 @@ app.listen(PORT, async () => {
     await testConnection();
     await initializeDatabase();
 
-    // Uncomment to run demonstration
-    // await CBSEOperations.demonstrateOperations();
 });
 
 // Export for use in other modules
@@ -1734,36 +1761,3 @@ module.exports = {
     authorizeRole
 };
 
-// Example of how to use the system:
-/*
-// Adding a new examiner
-const newExaminerData = {
-    examinerName: 'Dr. Neha Agarwal',
-    schoolId: 2,
-    qualification: 'M.Sc Chemistry, Ph.D',
-    subjectId: 2,
-    contactNumber: '9876543220',
-    email: 'neha.agarwal@email.com',
-    experienceYears: 14
-};
-
-// Evaluating an answer sheet
-const answerSheetData = {
-    answerBookId: 'AB2024004001C',
-    studentRollNumber: '2024001001',
-    subjectId: 2,
-    examinerId: 7, // New examiner's ID
-    marksAssigned: 89,
-    evaluationDate: '2024-04-20',
-    remarks: 'Excellent understanding of chemical concepts'
-};
-
-// Scheduling invigilation
-const invigilationData = {
-    examinerId: 7,
-    schoolId: 3,
-    examDate: '2024-03-25',
-    examSession: 'Morning',
-    subjectId: 2
-};
-*/

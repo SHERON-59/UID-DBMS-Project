@@ -179,4 +179,9 @@ SELECT * FROM evaluation_summary;
 SELECT * FROM examiner_details;
 SELECT * FROM invigilation_schedule;
 
+SELECT school_name, location, contact_number, email, principal_name
+FROM schools;
 
+UPDATE schools
+SET contact_number = '7815288028', email = 'contact@amrita.edu', principal_name ='Dr. Akshay Reddy'
+WHERE school_name = 'Amrita Vishwa Vidyapeetam';
